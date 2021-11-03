@@ -2,10 +2,10 @@
 
 psm="example/psm.txt"
 wl="../workloads/workload_1.txt"
-stats="EnergyStats.txt"
+stats="../results/EnergyStats.txt"
 tmpfile="tmpfile.txt"
 >$stats
-for timeout in {0..10}; do
+for timeout in {0..1000}; do
 	./dpm_simulator.exe -t $timeout -psm $psm -wl $wl >$tmpfile
 	printf "%d " $timeout >>$stats
 	grep -o "Energy w DPM.*" <$tmpfile | egrep -o "[0-9]+\.[0-9]+" | tr -d '\n'>>$stats
