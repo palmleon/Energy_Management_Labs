@@ -2,7 +2,7 @@
 
 int parse_args(int argc, char *argv[], char *fwl, psm_t *psm, dpm_policy_t
         *selected_policy, dpm_timeout_params *tparams, dpm_history_params
-        *hparams)
+        *hparams, dpm_last_active_params *laparams)
 {
     int cur = 1;
     while(cur < argc) {
@@ -31,6 +31,15 @@ int parse_args(int argc, char *argv[], char *fwl, psm_t *psm, dpm_policy_t
                 }
                 hparams->threshold[0] = atof(argv[++cur]);
                 hparams->threshold[1] = atof(argv[++cur]);
+            } else return 0;
+        }
+
+        // set policy to history based on the last active time only and get parameters and thresholds
+        if(strcmp(argv[cur], "-la") == 0) {
+            *selected_policy = DPM_LAST_ACTIVE;
+            if(argc > cur + DPM_N_THRESHOLDS) {
+                laparams->threshold[0] = atof(argv[++cur]);
+                laparams->threshold[1] = atof(argv[++cur]);
             } else return 0;
         }
 

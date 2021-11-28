@@ -14,14 +14,15 @@ int main(int argc, char *argv[]) {
     psm_t psm;
     dpm_timeout_params tparams;
     dpm_history_params hparams;
+    dpm_last_active_params laparams;
     dpm_policy_t sel_policy;
 
-    if(!parse_args(argc, argv, fwl, &psm, &sel_policy, &tparams, &hparams)) {
+    if(!parse_args(argc, argv, fwl, &psm, &sel_policy, &tparams, &hparams, &laparams)) {
         printf("[error] reading command line arguments\n");
         return -1;
     }
     psm_print(psm);
-	dpm_simulate(psm, sel_policy, tparams, hparams, fwl);
+	dpm_simulate(psm, sel_policy, tparams, hparams, laparams, fwl);
 
     return 0;
 }

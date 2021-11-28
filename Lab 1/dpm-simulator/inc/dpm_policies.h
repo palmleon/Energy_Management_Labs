@@ -26,7 +26,8 @@
 #define DPM_TIMEOUT 0
 /** history-based policy */
 #define DPM_HISTORY 1
-/** @} */
+/** history-based policy on the last active time only */
+#define DPM_LAST_ACTIVE 2
 
 /** Type alias for DPM policy IDs */
 typedef int dpm_policy_t;
@@ -49,6 +50,10 @@ typedef struct {
     double threshold[DPM_N_THRESHOLDS]; /**< thresholds on the predicted time that trigger a state transition */
 } dpm_history_params;
 
+typedef struct{
+    double threshold[DPM_N_THRESHOLDS]; /* thresholds for ACTIVE->IDLE and ACTIVE->SLEEP transitions */
+} dpm_last_active_params;
+
 /**
  * @brief Run the DPM simulation loop on a workload file
  *
@@ -62,7 +67,7 @@ typedef struct {
  *
  */
 int dpm_simulate(psm_t psm, dpm_policy_t sel_policy, dpm_timeout_params
-        tparams, dpm_history_params hparams, char* fwl);
+        tparams, dpm_history_params hparams, dpm_last_active_params laparams, char* fwl);
 
 /**
  * @brief Decide the next PSM state according to a given DPM policy
@@ -79,9 +84,9 @@ int dpm_simulate(psm_t psm, dpm_policy_t sel_policy, dpm_timeout_params
  * @return 1 on success, 0 on failure
  *
  */
-int dpm_decide_state(psm_state_t *next_state, psm_time_t curr_time,
+int dpm_decide_state(psm_state_t *next_state, psm_time_t curr_time, psm_interval_t prev_idle_period,
         psm_interval_t idle_period, psm_time_t *history, dpm_policy_t policy,
-        dpm_timeout_params tparams, dpm_history_params hparams);
+        dpm_timeout_params tparams, dpm_history_params hparams, dpm_last_active_params laparams);
 
 /**
  * @brief Initialize the history of previous idle times at the beginning of a simulation

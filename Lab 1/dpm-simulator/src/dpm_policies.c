@@ -1,11 +1,11 @@
 #include "inc/dpm_policies.h"
 
 int dpm_simulate(psm_t psm, dpm_policy_t sel_policy, dpm_timeout_params
-		tparams, dpm_history_params hparams, char* fwl)
+		tparams, dpm_history_params hparams, dpm_last_active_params laparams, char* fwl)
 {
 
 	FILE *fp;
-	psm_interval_t idle_period;
+	psm_interval_t idle_period, prev_idle_period;
 	psm_time_t history[DPM_HIST_WIND_SIZE];
 	psm_time_t curr_time = 0;
 	psm_state_t curr_state = PSM_STATE_ACTIVE;
@@ -27,19 +27,20 @@ int dpm_simulate(psm_t psm, dpm_policy_t sel_policy, dpm_timeout_params
 	}
 
 	dpm_init_history(history);
+    prev_idle_period.start = 0; prev_idle_period.end = 0;
 
     // main loop
     while(fscanf(fp, "%lf%lf", &idle_period.start, &idle_period.end) == 2) {
 
         t_idle_ideal += psm_duration(idle_period);
 		dpm_update_history(history, psm_duration(idle_period));
-
+        prev_state = PSM_STATE_ACTIVE; // at the beginning of each idle period, it is always active
         // for each instant until the end of the current idle period
 		for (; curr_time < idle_period.end; curr_time++) {
 
             // compute next state
-            if(!dpm_decide_state(&curr_state, curr_time, idle_period, history,
-                        sel_policy, tparams, hparams)) {
+            if(!dpm_decide_state(&curr_state, curr_time, prev_idle_period, idle_period, history,
+                        sel_policy, tparams, hparams, laparams)) {
                 printf("[error] cannot decide next state!\n");
                 return 0;
             }
@@ -47,6 +48,7 @@ int dpm_simulate(psm_t psm, dpm_policy_t sel_policy, dpm_timeout_params
             if (curr_state != prev_state) {
                 if(!psm_tran_allowed(psm, prev_state, curr_state)) {
                     printf("[error] prohibited transition!\n");
+                    printf("Current time: %f", curr_time);
                     return 0;
                 }
                 e_tran = psm_tran_energy(psm, prev_state, curr_state);
@@ -67,6 +69,7 @@ int dpm_simulate(psm_t psm, dpm_policy_t sel_policy, dpm_timeout_params
             }
             prev_state = curr_state;
         }
+        prev_idle_period = idle_period;
     }
     fclose(fp);
 
@@ -86,9 +89,9 @@ int dpm_simulate(psm_t psm, dpm_policy_t sel_policy, dpm_timeout_params
 	return 1;
 }
 
-int dpm_decide_state(psm_state_t *next_state, psm_time_t curr_time,
+int dpm_decide_state(psm_state_t *next_state, psm_time_t curr_time, psm_interval_t prev_idle_period,
         psm_interval_t idle_period, psm_time_t *history, dpm_policy_t policy,
-        dpm_timeout_params tparams, dpm_history_params hparams)
+        dpm_timeout_params tparams, dpm_history_params hparams, dpm_last_active_params laparams)
 {
     switch (policy) {
 
@@ -109,6 +112,16 @@ int dpm_decide_state(psm_state_t *next_state, psm_time_t curr_time,
                 *next_state = PSM_STATE_ACTIVE;
             }
             break;
+        case DPM_LAST_ACTIVE:
+            psm_time_t last_active_time = idle_period.start - prev_idle_period.end;
+            if (last_active_time < laparams.threshold[0])
+                *next_state = PSM_STATE_SLEEP;
+            else if (last_active_time < laparams.threshold[1])
+                *next_state = PSM_STATE_IDLE;
+            else
+                *next_state = PSM_STATE_ACTIVE;
+            break;
+        
 
         default:
             printf("[error] unsupported policy\n");
