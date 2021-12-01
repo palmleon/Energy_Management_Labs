@@ -13,7 +13,7 @@
  * @{
  */
 /** history window size for history-based policies */
-#define DPM_HIST_WIND_SIZE 5
+#define DPM_HIST_WIND_SIZE 6
 /** number of thresholds for history-based policies */
 #define DPM_N_THRESHOLDS 2
 /** @} */
@@ -61,7 +61,7 @@ typedef struct{
  * @param sel_policy: the selected policy type
  * @param tparams: the timeout policy parameters (if selected)
  * @param hparams: the history policy parameters (if selected)
- * @param fwl: the worload filename
+ * @param fwl: the workload filename
  *
  * @return 1 on success, 0 on failure
  *
@@ -104,5 +104,31 @@ void dpm_init_history(psm_time_t *h);
  *
  */
 void dpm_update_history(psm_time_t *h, psm_time_t new_idle);
+
+#define REAL 1
+
+#ifdef REAL
+
+typedef struct{
+    double duration;        //amount of time needed to complete the work
+    double start;           //ideal start time           
+} dpm_work_packet;
+
+/**
+ * @brief Run the DPM simulation loop on a workload file
+ *
+ * @param psm: the input psm specification
+ * @param sel_policy: the selected policy type
+ * @param tparams: the timeout policy parameters (if selected)
+ * @param hparams: the history policy parameters (if selected)
+ * @param fwl: the workload filename
+ *
+ * @return 1 on success, 0 on failure
+ *
+ */
+int dpm_simulate_real(psm_t psm, dpm_policy_t sel_policy, dpm_timeout_params
+        tparams, dpm_history_params hparams, dpm_last_active_params laparams, char* fwl);
+
+#endif
 
 #endif

@@ -22,7 +22,9 @@ int main(int argc, char *argv[]) {
         return -1;
     }
     psm_print(psm);
-	dpm_simulate(psm, sel_policy, tparams, hparams, laparams, fwl);
+    dpm_simulate(psm, sel_policy, tparams, hparams, laparams, fwl);
+    printf("\n");
+	dpm_simulate_real(psm, sel_policy, tparams, hparams, laparams, fwl);
 
     return 0;
 }
