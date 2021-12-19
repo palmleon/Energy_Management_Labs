@@ -111,6 +111,7 @@ dpm_history_params hparams, dpm_last_active_params laparams, char* fwl)
 	psm_time_t t_idle_ideal = 0;
     psm_time_t t_active_ideal = 0;          //time spent in active state ideally
     psm_time_t t_ideal_end = 0;             //time of the ideal end
+    psm_time_t t_max_delay = -1;             //time of maximum distance between ideal and real start of a work packet
     psm_time_t t_state[PSM_N_STATES] = {0};
     int n_tran_total = 0;
 
@@ -145,11 +146,14 @@ dpm_history_params hparams, dpm_last_active_params laparams, char* fwl)
     work_array[n_lines-1].duration = idle_period.start - work_array[n_lines-1].start;
     e_total_no_dpm = idle_period.end * psm_state_energy(psm, PSM_STATE_ACTIVE);
     t_ideal_end = idle_period.end;
+
     t_active_ideal += work_array[n_lines-1].duration;
     t_idle_ideal += idle_period.end - idle_period.start;
 
+    idle_period.start = 0; idle_period.end = 0;
+
     //Main loop: cycles until all work packets are completed
-    int fifo[10];                   //fifo of packets arrived but not completed, it keeps only indexes
+    int fifo[100];                  //fifo of packets arrived but not completed, it keeps only indexes
     int fifo_tail = 0;              //pointer to the tail of the fifo
     int work_packets_index = 0;     //index of next packet that will arrive
     int flag_idle_period = 0;
@@ -226,16 +230,20 @@ dpm_history_params hparams, dpm_last_active_params laparams, char* fwl)
                 n_tran_total++;
             }
             prev_state = PSM_STATE_ACTIVE;
+            if ((curr_time - work_array[fifo[0]].start) > t_max_delay){
+                t_max_delay = (curr_time - work_array[fifo[0]].start);
+            }
             curr_time += work_array[fifo[0]].duration;
             e_total += work_array[fifo[0]].duration * psm_state_energy(psm, curr_state);
             t_state[PSM_STATE_ACTIVE] += work_array[fifo[0]].duration;
-            for (int g = 0; g < 10; fifo[g]=fifo[g+1], g++);
+            for (int g = 0; g < 100; fifo[g]=fifo[g+1], g++);
             fifo_tail--;
         }
 
         prev_state = curr_state;
     }
     
+    free(work_array);
     fclose(fp);
     
     printf("[sim] Active time in profile = %.6lfs \n", t_active_ideal * PSM_TIME_UNIT);
@@ -249,6 +257,7 @@ dpm_history_params hparams, dpm_last_active_params laparams, char* fwl)
     printf("[sim] Time overhead for transitions = %.6lfs\n",t_tran_total * PSM_TIME_UNIT);
     printf("[sim] N. of transitions = %d\n", n_tran_total);
     printf("[sim] Energy for transitions = %.10fJ\n", e_tran_total * PSM_ENERGY_UNIT);
+    printf("[sim] Max delay with respect to no DPM = %.6fs\n", t_max_delay * PSM_TIME_UNIT);
     printf("[sim] Time w/o DPM = %.6fs, Time w DPM = %.6fs\n", 
             t_ideal_end * PSM_TIME_UNIT, curr_time * PSM_TIME_UNIT);
     printf("[sim] Energy w/o DPM = %.10fJ, Energy w DPM = %.10fJ\n",
@@ -274,7 +283,7 @@ int dpm_decide_state(psm_state_t *next_state, psm_time_t curr_time, psm_interval
 
         case DPM_HISTORY: {
             psm_time_t last_active_time = idle_period.start - prev_idle_period.end;
-            psm_time_t last_idle_time = history[DPM_HIST_WIND_SIZE-1];
+            psm_time_t last_idle_time = prev_idle_period.end - prev_idle_period.start;
 
             psm_time_t t_idle_pred = hparams.alpha[0];                          //K0
             t_idle_pred += hparams.alpha[1]*last_idle_time;                     //K1 * T_idle[i-1]
@@ -283,7 +292,7 @@ int dpm_decide_state(psm_state_t *next_state, psm_time_t curr_time, psm_interval
             t_idle_pred += hparams.alpha[4]*last_active_time*last_idle_time;    //K4 * t_active[i-1] * t_idle[i-1]
             t_idle_pred += hparams.alpha[5]*(last_active_time*last_active_time);//K5 * (t_active[i-1]^2)
 
-            printf("Next prediction idle: %f\n", t_idle_pred);
+            //printf("%f: Next prediction idle: %f\n", curr_time, t_idle_pred);
             if (t_idle_pred > hparams.threshold[0])
                 *next_state = PSM_STATE_SLEEP;
             else if (t_idle_pred > hparams.threshold[1])
