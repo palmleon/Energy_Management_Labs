@@ -1,0 +1,15 @@
+Metriche:
+Definire efficienza
+
+- Per ogni trasformazione:
+	- Efficienza/distorsione minima/massima/media
+	- Deviazione standard della distorsione
+
+- Per ogni immagine:
+	- Trasformazione più/meno efficiente
+	- Trasformazione più/meno distorcente
+	- Trasformazione più/meno efficiente/distorcente
+
+Infine, grafico riportante:
+- sull'asse x, le trasformazioni
+- sull'asse y, quante immagini sono state trasformate meglio, utilizzando il valore di efficienza/distorsione
