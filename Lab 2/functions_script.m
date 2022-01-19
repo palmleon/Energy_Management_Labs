@@ -57,8 +57,127 @@ classdef functions_script
             eff = functions_script.efficiency(A, S);
             dist = functions_script.distortion(A, S);
         end
-        
-        
+
+        % HUNGRY VALUE
+        function [dist, eff] = hungryvalue(A)
+            efficiency = zeros(10,1);
+            distortion = zeros(10,1);
+            Apower = functions_script.computePower(A);
+            A_hsv = rgb2hsv(A);
+            g = 1;
+            for c = 0.9:-0.1:0.0
+                S_hsv = A_hsv;
+                S_hsv(:,:,3) = (A_hsv(:,:,3) .* c);
+                S_final = uint8(hsv2rgb(S_hsv).*256);
+                efficiency(g) = 1 - (functions_script.computePower(S_final)/Apower);
+                distortion(g) = functions_script.distortion(A, S_final);
+                g = g+1;
+            end
+            dist = distortion;
+            eff = efficiency;
+        end
+
+        % HUNGRY LUMINANCE
+        function [dist, eff] = hungryluminance(A)
+            efficiency = zeros(10,1);
+            distortion = zeros(10,1);
+            Apower = functions_script.computePower(A);
+            A_lab = rgb2lab(A);
+            g = 1;
+            for c = 0.9:-0.1:0.0
+                S_lab = A_lab;
+                S_lab(:,:,1) = (S_lab(:,:,1) .* c);
+                S_final = lab2rgb(S_lab,'OutputType','uint8');
+                efficiency(g) = 1 - (functions_script.computePower(S_final)/Apower);
+                distortion(g) = functions_script.distortion(A, S_final);
+                g = g+1;
+            end
+            dist = distortion;
+            eff = efficiency;
+        end 
+
+        % HUNGRY BLUE AND VALUE
+         function [dist, eff] = hungrybluevalue(A)
+            efficiency = zeros(10,1);
+            distortion = zeros(10,1);
+            Apower = functions_script.computePower(A);
+            g = 1;
+            for c = 0.95:-0.05:0.5
+                S = A;
+                S(:,:,3) = uint8(S(:,:,3) .* c);
+                S_hsv = rgb2hsv(S);
+                S_hsv(:,:,3) = S_hsv(:,:,3) .* c;
+                S_final = uint8(hsv2rgb(S_hsv).*256);
+                efficiency(g) = 1 - (functions_script.computePower(S_final)/Apower);
+                distortion(g) = functions_script.distortion(A, S_final);
+                g = g+1;
+            end
+            dist = distortion;
+            eff = efficiency;
+        end            
+
+        % HUNGRY LUMINANCE AND VALUE
+        function [dist, eff] = hungryluminancevalue(A)
+            efficiency = zeros(10,1);
+            distortion = zeros(10,1);
+            Apower = functions_script.computePower(A);
+            g = 1;
+            for c = 0.95:-0.05:0.5
+                S_lab = rgb2lab(A);
+                S_lab(:,:,1) = S_lab(:,:,1) .* c;
+                S_hsv = rgb2hsv(lab2rgb(S_lab,'OutputType','uint8'));
+                S_hsv(:,:,3) = S_hsv(:,:,3) .* c;
+                S_final = uint8(hsv2rgb(S_hsv).*256);
+                efficiency(g) = 1 - (functions_script.computePower(S_final)/Apower);
+                distortion(g) = functions_script.distortion(A, S_final);
+                g = g+1;
+            end
+            dist = distortion;
+            eff = efficiency;
+        end 
+
+        % HUNGRY BLUE AND LUMINANCE
+        function [dist, eff] = hungryblueluminance(A)
+            efficiency = zeros(10,1);
+            distortion = zeros(10,1);
+            Apower = functions_script.computePower(A);
+            g = 1;
+            for c = 0.95:-0.05:0.5
+                S = A;
+                S(:,:,3) = uint8(S(:,:,3) .* c);
+                S_lab = rgb2lab(S);
+                S_lab(:,:,1) = S_lab(:,:,1) .* c;
+                S_final = lab2rgb(S_lab,'OutputType','uint8');
+                efficiency(g) = 1 - (functions_script.computePower(S_final)/Apower);
+                distortion(g) = functions_script.distortion(A, S_final);
+                g = g+1;
+            end
+            dist = distortion;
+            eff = efficiency;
+        end 
+
+        % HUNGRY ALL
+        function [dist, eff] = hungryall(A)
+           efficiency = zeros(10,1);
+            distortion = zeros(10,1);
+            Apower = functions_script.computePower(A);
+            g = 1;
+            for c = 0.95:-0.05:0.5
+                S = A;
+                S(:,:,3) = uint8(S(:,:,3) .* c);
+                S_lab = rgb2lab(S);
+                S_lab(:,:,1) = S_lab(:,:,1) .* c;
+                S_hsv = rgb2hsv(lab2rgb(S_lab,'OutputType','uint8'));
+                S_hsv(:,:,3) = S_hsv(:,:,3) .* c;
+                S_final = uint8(hsv2rgb(S_hsv).*256);
+                efficiency(g) = 1 - (functions_script.computePower(S_final)/Apower);
+                distortion(g) = functions_script.distortion(A, S_final);
+                g = g+1;
+            end
+            dist = distortion;
+            eff = efficiency; 
+        end
+       
         %%%%%%%%%% Second day functions %%%%%%%%%%
 
         function S = computeCurrentPerColour(A)

@@ -1,5 +1,3 @@
-image = functions_script.all_images_banchmark;
-
 % echo off all
 % images = all_images_banchmark;
 % n_images = size(images, 2);
@@ -19,79 +17,72 @@ image = functions_script.all_images_banchmark;
 % end
 % save('result_histeq', 'images', 'dist', 'eff');
 
-nImages = 14;
-nTransf = 3; % ?? to be defined ??
-extensions = [".tiff", ".jpg", ".png"];
-Efficiency = zeros(nTransf, nImages);
-Distortion = zeros(nTransf, nImages);
+images = functions_script.all_images_banchmark;
+n_images = size(images, 2);
+n_transf_hb = 11;
+n_transf_histeq = 1;
+n_transf_hv = 10;
+n_transf_hl = 10;
+n_transf_hbl = 10;
+n_transf_hlv = 10;
+n_transf_hbv = 10;
+n_transf_hblv = 10;
+n_transf = n_transf_hb + n_transf_histeq + n_transf_hv + n_transf_hl;
+n_transf = n_transf + n_transf_hbl + n_transf_hbv + n_transf_hlv + n_transf_hblv;
+efficiency = zeros(n_transf, n_images);
+distortion = zeros(n_transf, n_images);
 
-for i = 1:nImages
+for i = 1:n_images
     % load the image
-    S = imread("images/image_" + num2str(1) + extensions(ceil(1/5)));
+    A = imread(images(i));
     % apply all defined transformations for each transformation,
     %   save the resulting efficiency and distorsion in the E and D matrix
-    % Distorsion is defined as the Euclidean Distance in the LAB space
-    % Efficiency is defined as 1 - POWER_MOD/POWER_ORIG
     %%%%%%%%%%%%%%%%%%%%%%%%%%%
-    % Hungry blue with k = 0.8
-    S1 = S;
-    S1(:,:,3) = uint8(S(:,:,3) .* 0.8);
-    Efficiency(1,i) = efficiency(S, S1);
-    Distortion(1,i) = distortion(S, S1);
-    % Hungry blue with k = 0.6
-    S1 = S;
-    S1(:,:,3) = uint8(S(:,:,3) .* 0.6);
-    Efficiency(2,i) = efficiency(S, S1);
-    Distortion(2,i) = distortion(S, S1);
-    % Hungry blue with k = 0.4
-    S1 = S;
-    S1(:,:,3) = uint8(S(:,:,3) .* 0.4);
-    Efficiency(3,i) = efficiency(S, S1);
-    Distortion(3,i) = distortion(S, S1);
+    % Hungry blue
+    [hb_dist, hb_eff] = functions_script.hungryblue(A);
+    efficiency(1:n_transf_hb, i) = hb_eff;
+    distortion(1:n_transf_hb, i) = hb_dist;
     % Histogram equalization
-
-    % Reduce V with k = 0.8
-
-    % Reduce V with k = 0.6
-
-    % Reduce V with k = 0.4
-
-    % Reduce L with k = 0.8
-
-    % Reduce L with k = 0.6
-
-    % Reduce L with k = 0.4
-
-    % Reduce B and V with k = 0.9
-
-    % Reduce B and V with k = 0.8
-
-    % Reduce B and V with k = 0.7
-
-    % Reduce L and V with k = 0.9
-
-    % Reduce L and V with k = 0.8
-
-    % Reduce L and V with k = 0.7
-
-    % Reduce B and L with k = 0.9
-    
-    % Reduce B and L with k = 0.8
-
-    % Reduce B and L with k = 0.7
-
-    % Reduce B, l and V with k = 0.93
-
-    % Reduce B, l and V with k = 0.86
-
-    % Reduce B, l and V with k = 0.79
-
+    k = n_transf_hb;
+    [histeq_dist, histeq_eff] = functions_script.histogram_eq(A);
+    efficiency(k+1:k+n_transf_histeq, i) = histeq_eff;
+    distortion(k+1:k+n_transf_histeq, i) = histeq_dist;
+    % Hungry Value
+    k = k + n_transf_histeq;
+    [hv_dist, hv_eff] = functions_script.hungryvalue(A);
+    efficiency(k+1:k+n_transf_hv, i) = hv_eff;
+    distortion(k+1:k+n_transf_hv, i) = hv_dist;
+    % Hungry Luminance
+    k = k + n_transf_hv;
+    [hl_dist, hl_eff] = functions_script.hungryluminance(A);
+    efficiency(k+1:k+n_transf_hl, i) = hl_eff;
+    distortion(k+1:k+n_transf_hl, i) = hl_dist;
+    % Hungry Blue and Value
+    k = k + n_transf_hl;
+    [hbv_dist, hbv_eff] = functions_script.hungrybluevalue(A);
+    efficiency(k+1:k+n_transf_hbv, i) = hbv_eff;
+    distortion(k+1:k+n_transf_hbv, i) = hbv_dist;
+    % Hungry Luminance and Value
+    k = k + n_transf_hbv;
+    [hlv_dist, hlv_eff] = functions_script.hungryluminancevalue(A);
+    efficiency(k+1:k+n_transf_hlv, i) = hlv_eff;
+    distortion(k+1:k+n_transf_hlv, i) = hlv_dist;
+    % Hungry Blue and Luminance
+    k = k + n_transf_hlv;
+    [hbl_dist, hbl_eff] = functions_script.hungryblueluminance(A);
+    efficiency(k+1:k+n_transf_hbl, i) = hbl_eff;
+    distortion(k+1:k+n_transf_hbl, i) = hbl_dist;
+    % Hungry Blue, Luminance and Value
+    k = k + n_transf_hbl;
+    [hblv_dist, hblv_eff] = functions_script.hungryall(A);
+    efficiency(k+1:k+n_transf_hblv, i) = hblv_eff;
+    distortion(k+1:k+n_transf_hblv, i) = hblv_dist;
 end
 
 % statistical analysis on the efficiency and distorsion of images
 % ...
 
-% metric = eff ./ ((1+dist).^2);
+% metric = eff ./ (1+(dist).^2);
 % metric2 = eff ./ dist;
 % plot(0.1:0.1:1.0, mean(matric1(2:11,:),2), 'bx-', 0.1:0.1:1.0, mean(matric2(2:11,:), 2), 'kx-');
 

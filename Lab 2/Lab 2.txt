@@ -1,4 +1,5 @@
 Metriche:
+
 Definire efficienza
 
 - Per ogni trasformazione:
@@ -6,10 +7,10 @@ Definire efficienza
 	- Deviazione standard della distorsione
 
 - Per ogni immagine:
-	- Trasformazione più/meno efficiente
-	- Trasformazione più/meno distorcente
-	- Trasformazione più/meno efficiente/distorcente
+	- Trasformazione più/meno efficiente			(magari in istogramma)
+	- Trasformazione più/meno distorcente			(magari in istogramma)
+	- Trasformazione più/meno efficiente/distorcente	(magari in istogramma)
 
 Infine, grafico riportante:
 - sull'asse x, le trasformazioni
-- sull'asse y, quante immagini sono state trasformate meglio, utilizzando il valore di efficienza/distorsione
+- sull'asse y, quante immagini sono state trasformate meglio, utilizzando il valore della metrica
