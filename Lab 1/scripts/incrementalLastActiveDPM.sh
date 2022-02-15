@@ -8,11 +8,11 @@ tmpfile="tmpfile.txt"
 dpm_simulator="$main_dir/dpm_simulator"
 >$stats
 
-for thrSleep in {1..100}; do
-	for (( thrIdle = thrSleep + 1; thrIdle < 100; thrIdle++ )) do
-	$dpm_simulator -la $thrSleep $thrIdle -psm $psm -wl $wl >$tmpfile 
+for thrIdle in {1..100}; do
+	for (( thrSleep = thrIdle + 1; thrSleep < 1000; thrSleep++ )) do
+	$dpm_simulator -la $thrIdle $thrSleep -psm $psm -wl $wl >$tmpfile 
 	
-    printf "%d %d" $thrSleep $thrIdle >>$stats
+    printf "%d %d" $thrIdle $thrSleep >>$stats
 	printf " " >>$stats
 	
     grep -o "Energy w DPM.*" <$tmpfile | egrep -o "[0-9]+\.[0-9]+" | tr -d '\n'>>$stats

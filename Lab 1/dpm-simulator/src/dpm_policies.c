@@ -303,9 +303,9 @@ int dpm_decide_state(psm_state_t *next_state, psm_time_t curr_time, psm_interval
 
         case DPM_LAST_ACTIVE:
             psm_time_t last_active_time = idle_period.start - prev_idle_period.end;
-            if (last_active_time < laparams.threshold[0])
+            if (last_active_time > laparams.threshold[1])
                 *next_state = PSM_STATE_SLEEP;
-            else if (last_active_time < laparams.threshold[1])
+            else if (last_active_time > laparams.threshold[0])
                 *next_state = PSM_STATE_IDLE;
             else
                 *next_state = PSM_STATE_ACTIVE;
