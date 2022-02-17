@@ -180,13 +180,75 @@ classdef functions_script
        
         %%%%%%%%%% Second day functions %%%%%%%%%%
 
-        function S = computeCurrentPerColour(A)
-            p1 = 4.251e-5;
-            p2 = -3.029e-4;
-            p3 = +3.024e-5;
-            Vdd = 15;
+        function S = computeCurrentPerColour(A, Vdd)
+            p1 =   4.251e-05;
+            p2 =  -3.029e-04;
+            p3 =   3.024e-05;
         
             S = ((p1 * Vdd * double(A))/255) + ((p2 * double(A))/255) + p3;
+        end
+
+        function S = computePowerPanel(A, Vdd)
+            % Matrix with currents instead of colours
+            M_currents = functions_script.computeCurrentPerColour(A, Vdd);
+
+            S = Vdd * sum(sum(sum(M_currents)));
+        end
+
+        % BRIGHTNESS SCALING
+        function S = brightness_scale_dvs(A, Vdd)
+            p1 =   4.251e-05;
+            p2 =  -3.029e-04;
+            p3 =   3.024e-05;
+            Vdd_org = 15;
+            I_cell_max = (p1 * Vdd * 1) + (p2 * 1) + p3;
+            image_RGB_max = (I_cell_max - p3)/(p1*Vdd_org+p2) * 255;
+            n_pixel = size(A,1)*size(A,2)*3;
+            n_pixel_sat = size(A(A > image_RGB_max), 1);
+
+            % Need to estimate loss in brightness
+            A_hsv = rgb2hsv(A);
+            A_mean_v = mean(A(:,:,3), 'all');
+            A_hsv(:,:,3) = A_hsv(:,:,3)+0.1;
+            
+            A_scaled = 255*hsv2rgb(A_hsv);
+            S = uint8(A_scaled);
+        end
+
+        % HISTOGRAM EQUALISATION
+        function S = histogram_eq_dvs(A, Vdd)
+            p1 =   4.251e-05;
+            p2 =  -3.029e-04;
+            p3 =   3.024e-05;
+            Vdd_org = 15;
+            I_cell_max = (p1 * Vdd * 1) + (p2 * 1) + p3;
+            image_RGB_max = (I_cell_max - p3)/(p1*Vdd_org+p2) * 255;
+         
+            H = histeq(A);
+            S = uint8((double(H)/255.0)*image_RGB_max);
+        end
+
+        % Function given by the professor
+        function out = displayed_image(I_cell, Vdd, mode)
+            SATURATED = 1;
+            DISTORTED = 2;
+            
+            p1 =   4.251e-05;
+            p2 =  -3.029e-04;
+            p3 =   3.024e-05;
+            Vdd_org = 15;
+            
+            I_cell_max = (p1 * Vdd * 1) + (p2 * 1) + p3;
+            image_RGB_max = (I_cell_max - p3)/(p1*Vdd_org+p2) * 255;
+            
+            out = round((I_cell - p3)/(p1*Vdd_org+p2) * 255);
+            
+            if (mode == SATURATED)
+                out(find(I_cell > I_cell_max)) = image_RGB_max;
+            else if (mode == DISTORTED)
+                    out(find(I_cell > I_cell_max)) = round(255 - out(find(I_cell > I_cell_max)));
+                end
+            end
         end
         
         %%%%%%%%%% File handling functions %%%%%%%%%%
