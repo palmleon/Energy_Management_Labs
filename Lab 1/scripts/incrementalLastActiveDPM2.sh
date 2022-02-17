@@ -2,9 +2,9 @@
 
 main_dir="../dpm-simulator"
 psm="$main_dir/example/psm.txt"
-wl="$main_dir/../workloads/workload_1.txt"
-stats="$main_dir/../results/__NEW__LastActiveResults_wl1.txt"
-tmpfile="tmpfile.txt"
+wl="$main_dir/../workloads/workload_2.txt"
+stats="$main_dir/../results/__NEW__LastActiveResults_wl2.txt"
+tmpfile="tmpfile2.txt"
 dpm_simulator="$main_dir/dpm_simulator"
 >$stats
 
