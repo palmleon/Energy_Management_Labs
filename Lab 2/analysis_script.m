@@ -35,9 +35,19 @@ distortion = zeros(n_transf, n_images);
 for i = 1:n_images
     % load the image
     A = imread(images(i));
+    if (size(A, 3) == 1)
+        clear S;
+        S(:,:,1) = A;
+        S(:,:,2) = A;
+        S(:,:,3) = A;
+        A = S;
+    end
+    
     % apply all defined transformations for each transformation,
     %   save the resulting efficiency and distorsion in the E and D matrix
     %%%%%%%%%%%%%%%%%%%%%%%%%%%
+    fprintf('%.2f\n', (i/n_images)*100)
+
     % Hungry blue
     [hb_dist, hb_eff] = functions_script.hungryblue(A);
     efficiency(1:n_transf_hb, i) = hb_eff;
@@ -78,6 +88,8 @@ for i = 1:n_images
     efficiency(k+1:k+n_transf_hblv, i) = hblv_eff;
     distortion(k+1:k+n_transf_hblv, i) = hblv_dist;
 end
+
+save('results', 'images', 'distortion', 'efficiency');
 
 % statistical analysis on the efficiency and distorsion of images
 % ...
