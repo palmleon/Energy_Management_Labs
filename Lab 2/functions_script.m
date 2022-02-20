@@ -1,7 +1,7 @@
 
 classdef functions_script
     methods (Static)
-        
+
         function S = computePower(A)
             gamma = 0.7755;
             Wr = 2.13636845*10^-7;
@@ -194,6 +194,10 @@ classdef functions_script
             M_currents = functions_script.computeCurrentPerColour(A, Vdd);
 
             S = Vdd * sum(sum(sum(M_currents)));
+        end
+
+        function e = efficiency_dvs(A, B, Vdd)
+            e = 1 - functions_script.computePowerPanel(B, Vdd)/functions_script.computePowerPanel(A,15);
         end
 
         % BRIGHTNESS SCALING
