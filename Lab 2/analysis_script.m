@@ -1,22 +1,3 @@
-% echo off all
-% images = all_images_banchmark;
-% n_images = size(images, 2);
-% dist = zeros(n_images,1);
-% eff = zeros(n_images,1);
-% for i = 1:n_images
-%     S = imread(images(i));
-%     if (size(S, 3) == 1)
-%         clear A;
-%         A(:,:,1) = S;
-%         A(:,:,2) = S;
-%         A(:,:,3) = S;
-%         S = A;
-%     end
-%     disp( (i/n_images) * 100);
-%     [dist(i,1),eff(i,1)] = histogram_eq(S);
-% end
-% save('result_histeq', 'images', 'dist', 'eff');
-
 images = functions_script.all_images_banchmark;
 n_images = size(images, 2);
 n_transf_hb = 11;
@@ -35,6 +16,8 @@ distortion = zeros(n_transf, n_images);
 for i = 1:n_images
     % load the image
     A = imread(images(i));
+
+    % Transform from gray scale to RGB
     if (size(A, 3) == 1)
         clear S;
         S(:,:,1) = A;
@@ -46,7 +29,6 @@ for i = 1:n_images
     % apply all defined transformations for each transformation,
     %   save the resulting efficiency and distorsion in the E and D matrix
     %%%%%%%%%%%%%%%%%%%%%%%%%%%
-    fprintf('%.2f\n', (i/n_images)*100)
 
     % Hungry blue
     [hb_dist, hb_eff] = functions_script.hungryblue(A);
@@ -93,24 +75,21 @@ save('results', 'images', 'distortion', 'efficiency');
 
 % statistical analysis on the efficiency and distorsion of images
 % ...
+metric = efficiency ./ ((1+distortion).^30);
 
-% metric = eff ./ (1+(dist).^2);
-% metric2 = eff ./ dist;
-% plot(0.1:0.1:1.0, mean(matric1(2:11,:),2), 'bx-', 0.1:0.1:1.0, mean(matric2(2:11,:), 2), 'kx-');
+% Hungry blue evaluation
+subplot(1,2,1);
+x_label = {'90%','80%','70%','60%','50%','40%','30%','20%','10%','0%'};
+boxplot(transpose(distortion(2:11,:)), 'Label', x_label, 'symbol', '');
+hold on; ylabel('Distortion');
+subplot(1,2,2);
+boxplot(transpose(efficiency(2:11,:)), 'Label', x_label, 'symbol', '');
+ylabel('Efficiency');
 
-% errorbar(0.0:0.1:1.0, mean(dist,2), std(dist, 0, 2), 'kx-');
-% hold on;
-% plot(0.0:0.1:1.0, max(dist,[], 2), 'bl-',0.0:0.1:1.0, min(dist,[], 2), 'r-')
-% title('Distance');
-% hold off;
-% figure, errorbar(0.0:0.1:1.0, mean(eff,2), std(eff, 0, 2), 'kx-');
-% hold on;
-% plot(0.0:0.1:1.0, max(eff,[], 2), 'bl-',0.0:0.1:1.0, min(eff,[], 2), 'r-')
-% title('Efficiency');
-% hold off;
-% figure, errorbar(0.1:0.1:1.0, mean(metric,2), std(metric, 0, 2), 'kx-');
-% hold on;
-% plot(0.1:0.1:1.0, max(metric,[], 2), 'bl-',0.1:0.1:1.0, min(metric,[], 2), 'r-')
-% title('Our metric');
-% boxplot(transpose(metric));
-% title('Our metric');
+% Histogram equalization
+subplot(1,2,1);
+boxplot(transpose(distortion(12,:)), 'symbol', '');
+hold on; ylabel('Distortion');
+subplot(1,2,2);
+boxplot(transpose(efficiency(12,:)), 'symbol', '');
+ylabel('Efficiency');

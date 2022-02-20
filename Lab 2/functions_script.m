@@ -1,6 +1,7 @@
 
 classdef functions_script
     methods (Static)
+        
         function S = computePower(A)
             gamma = 0.7755;
             Wr = 2.13636845*10^-7;
