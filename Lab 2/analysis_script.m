@@ -204,8 +204,7 @@ b(7).FaceColor = [226.0/255, 116.0/255, 207.0/251];
 
 
                     %%%%%%%%%% Second day %%%%%%%%%%
-  
-                 
+%{                 
 images = functions_script.all_images_banchmark;
 n_images = size(images, 2);
 n_transf = 5*17 ; %only dvs + 2 transformations for 5 different
@@ -280,6 +279,7 @@ for i = 1:n_images
         end
     end
 end
+%}
 
 % GENERATE SAMPLE IMAGES WITH THEIR TRANSFORMATIONS
 images = functions_script.all_images_banchmark;
@@ -302,14 +302,14 @@ for i = 1:n_sample_images
     end
 
     Vdd = randi([10, 14]);          % random Vdd
-    constraint_dist = randi([1,5]); % random Distortion constraint
+    constraint_dist = randi([1,10]); % random Distortion constraint
 
     % Create images array for the given image
     I_A = functions_script.computeCurrentPerColour(image, 15);
     image_array = uint8(functions_script.displayed_image(I_A, Vdd, 1));
     image_array(:,:,:,2) = uint8(functions_script.histogram_eq_dvs(image, Vdd));
     j = 3;
-    for kx = 0.1:0.1:0.5 
+    for kx = 0.05:0.05:0.25 
         image_array(:,:,:,j) = uint8(functions_script.brightness_scale_dvs(image, Vdd, kx));
         j = j+1;
         image_array(:,:,:,j) = uint8(functions_script.brightness_contrast_combine_dvs(image, Vdd, kx));
@@ -319,12 +319,10 @@ for i = 1:n_sample_images
     end
 
     % Extract distortion and efficiency related to the chosen Vdd
-    
     distortion_array = distortion_dvs(:,r(i))';
-    distortion_array = distortion_array((Vdd-10)*n_transf_single_vdd+1:(Vdd-10+1)*n_transf_single_vdd);
+    distortion_array = distortion_array((Vdd-10)*n_transf_single_vdd+1:(Vdd-9)*n_transf_single_vdd);
     efficiency_array = efficiency_dvs(:,r(i))';
-    efficiency_array = efficiency_array((Vdd-10)*n_transf_single_vdd+1:(Vdd-10+1)*n_transf_single_vdd);
-    
+    efficiency_array = efficiency_array((Vdd-10)*n_transf_single_vdd+1:(Vdd-9)*n_transf_single_vdd);
 
     % Filter images with distortion < constraint and save them
     newSubFolder = sprintf('image_%s', num2str(i));
@@ -337,8 +335,7 @@ for i = 1:n_sample_images
         if (distortion_array(j) < constraint_dist/100)
             imwrite(image_array(:,:,:,j), strcat('image_samples_poll/', newSubFolder, '/', num2str(j), '.png'), 'png');
         end
-    end
-    
+    end   
 
 end
 

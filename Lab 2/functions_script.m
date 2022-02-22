@@ -215,7 +215,9 @@ classdef functions_script
             A_hsv = rgb2hsv(A);
             A_mean_v = mean(A(:,:,3), 'all');
             A_hsv(:,:,3) = A_hsv(:,:,3)+k;
-            A_hsv(find(A_hsv(:,:,3) > 1)) = 1;
+            tmp = A_hsv(:,:,3);
+            tmp(find(tmp > 1)) = 1;
+            A_hsv(:,:,3) = tmp;
             
             A_scaled = 255*hsv2rgb(A_hsv);
             S = uint8(A_scaled);
@@ -238,10 +240,11 @@ classdef functions_script
         function S = contrast_enhance_dvs(A, Vdd, k)
             A_hsv = rgb2hsv(A);
             A_hsv(:,:,3) = A_hsv(:,:,3)*(1.0+k);
-            S_hsv = A_hsv;
-            S_hsv(find(A_hsv(:,:,3) > 1)) = 1;
+            tmp = A_hsv(:,:,3);
+            tmp(find(tmp > 1)) = 1;
+            A_hsv(:,:,3) = tmp;
             
-            S_scaled = 255*hsv2rgb(S_hsv);
+            S_scaled = 255*hsv2rgb(A_hsv);
             S = uint8(S_scaled);
         end
 
@@ -250,10 +253,11 @@ classdef functions_script
             A_hsv = rgb2hsv(A);
             A_hsv(:,:,3) = A_hsv(:,:,3)*(1.0+k);
             A_hsv(:,:,3) = A_hsv(:,:,3)+k;
-            S_hsv = A_hsv;
-            S_hsv(find(S_hsv(:,:,3) > 1)) = 1;
-            
-            S_scaled = 255*hsv2rgb(S_hsv);
+            tmp = A_hsv(:,:,3);
+            tmp(find(tmp > 1)) = 1;
+            A_hsv(:,:,3) = tmp;
+
+            S_scaled = 255*hsv2rgb(A_hsv);
             S = uint8(S_scaled);
         end
 
