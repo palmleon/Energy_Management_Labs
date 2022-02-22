@@ -13,6 +13,7 @@ n_transf = n_transf + n_transf_hbl + n_transf_hbv + n_transf_hlv + n_transf_hblv
 efficiency = zeros(n_transf, n_images);
 distortion = zeros(n_transf, n_images);
 
+%{
 for i = 1:n_images
     % load the image
     A = imread(images(i));
@@ -94,12 +95,17 @@ subplot(1,2,2);
 boxplot(transpose(efficiency(12,:)), 'symbol', '');
 ylabel('Efficiency');brightness_scale_dvs
 
+%}
+
+
                     %%%%%%%%%% Second day %%%%%%%%%%
                     
 images = functions_script.all_images_banchmark;
 n_images = size(images, 2);
-n_transf = 5*4 ; %only dvs + 4 transformation for 4 differen values of vdd
-efficiency_dvs = zeors(n_transf, n_images);
+n_transf = 5*17 ; %only dvs + 2 transformations for 5 different
+    % values of Vdd + 3 transformations with 5 different parameters for
+    % each Vdd
+efficiency_dvs = zeros(n_transf, n_images);
 distortion_dvs = zeros(n_transf, n_images);
 
 for i = 1:n_images
@@ -125,18 +131,10 @@ for i = 1:n_images
         
         % Image with only voltage scaled without image processing
         A_dvs = functions_script.displayed_image(I_A, Vdd, 1);
-
+        
         % Efficiency and distortion without image processing
         distortion_dvs(k, i) = functions_script.distortion(A, uint8(A_dvs));
         efficiency_dvs(k, i) = functions_script.efficiency_dvs(A, uint8(A_dvs), Vdd);
-        k=k+1;
-
-        % Brightness scaling
-        Ab = functions_script.brightness_scale_dvs(A, Vdd);
-        I_Ab = functions_script.computeCurrentPerColour(Ab, 15);
-        Ab_dvs = functions_script.displayed_image(I_Ab, Vdd, 1);
-        distortion_dvs(k, i) = functions_script.distortion(A, uint8(Ab_dvs));
-        efficiency_dvs(k, i) = functions_script.efficiency_dvs(A, uint8(Ab_dvs), Vdd);
         k=k+1;
 
         % Histogram equalization
@@ -147,10 +145,33 @@ for i = 1:n_images
         efficiency_dvs(k, i) = functions_script.efficiency_dvs(A, uint8(Ah_dvs), Vdd);
         k=k+1;
 
-        % Third transofrmation
+        for kx = 0.1:0.1:0.5
 
-        % Fourth transformation
+            % Brightness scaling
+            Ab = functions_script.brightness_scale_dvs(A, Vdd, kx);
+            I_Ab = functions_script.computeCurrentPerColour(Ab, 15);
+            Ab_dvs = functions_script.displayed_image(I_Ab, Vdd, 1);
+            distortion_dvs(k, i) = functions_script.distortion(A, uint8(Ab_dvs));
+            efficiency_dvs(k, i) = functions_script.efficiency_dvs(A, uint8(Ab_dvs), Vdd);
+            k=k+1;
 
+            % Third transformation
+            Abc = functions_script.brightness_contrast_combine_dvs(A, Vdd, kx);
+            I_Abc = functions_script.computeCurrentPerColour(Abc, 15);
+            Abc_dvs = functions_script.displayed_image(I_Abc, Vdd, 1);
+            distortion_dvs(k, i) = functions_script.distortion(A, uint8(Abc_dvs));
+            efficiency_dvs(k, i) = functions_script.efficiency_dvs(A, uint8(Abc_dvs), Vdd);
+            k=k+1;
+
+            % Fourth transformation
+            Ac = functions_script.contrast_enhance_dvs(A, Vdd, kx/2);
+            I_Ac = functions_script.computeCurrentPerColour(Abc, 15);
+            Ac_dvs = functions_script.displayed_image(I_Ac, Vdd, 1);
+            distortion_dvs(k, i) = functions_script.distortion(A, uint8(Ac_dvs));
+            efficiency_dvs(k, i) = functions_script.efficiency_dvs(A, uint8(Ac_dvs), Vdd);
+            k=k+1;
+
+        end
     end
 end
 

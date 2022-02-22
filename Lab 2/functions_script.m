@@ -201,7 +201,7 @@ classdef functions_script
         end
 
         % BRIGHTNESS SCALING
-        function S = brightness_scale_dvs(A, Vdd)
+        function S = brightness_scale_dvs(A, Vdd, k)
             p1 =   4.251e-05;
             p2 =  -3.029e-04;
             p3 =   3.024e-05;
@@ -214,7 +214,8 @@ classdef functions_script
             % Need to estimate loss in brightness
             A_hsv = rgb2hsv(A);
             A_mean_v = mean(A(:,:,3), 'all');
-            A_hsv(:,:,3) = A_hsv(:,:,3)+0.1;
+            A_hsv(:,:,3) = A_hsv(:,:,3)+k;
+            A_hsv(find(A_hsv(:,:,3) > 1)) = 1;
             
             A_scaled = 255*hsv2rgb(A_hsv);
             S = uint8(A_scaled);
@@ -231,6 +232,29 @@ classdef functions_script
          
             H = histeq(A);
             S = uint8((double(H)/255.0)*image_RGB_max);
+        end
+
+        % CONTRAST ENHANCEMENT
+        function S = contrast_enhance_dvs(A, Vdd, k)
+            A_hsv = rgb2hsv(A);
+            A_hsv(:,:,3) = A_hsv(:,:,3)*(1.0+k);
+            S_hsv = A_hsv;
+            S_hsv(find(A_hsv(:,:,3) > 1)) = 1;
+            
+            S_scaled = 255*hsv2rgb(S_hsv);
+            S = uint8(S_scaled);
+        end
+
+        % COMBINED BS + CE
+        function S = brightness_contrast_combine_dvs(A, Vdd, k)
+            A_hsv = rgb2hsv(A);
+            A_hsv(:,:,3) = A_hsv(:,:,3)*(1.0+k);
+            A_hsv(:,:,3) = A_hsv(:,:,3)+k;
+            S_hsv = A_hsv;
+            S_hsv(find(S_hsv(:,:,3) > 1)) = 1;
+            
+            S_scaled = 255*hsv2rgb(S_hsv);
+            S = uint8(S_scaled);
         end
 
         % Function given by the professor
