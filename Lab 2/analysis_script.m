@@ -204,7 +204,8 @@ b(7).FaceColor = [226.0/255, 116.0/255, 207.0/251];
 
 
                     %%%%%%%%%% Second day %%%%%%%%%%
-                    
+  
+                 
 images = functions_script.all_images_banchmark;
 n_images = size(images, 2);
 n_transf = 5*17 ; %only dvs + 2 transformations for 5 different
@@ -232,7 +233,7 @@ for i = 1:n_images
 
     % Using different values of Vdd (below 10 the image will be completely
     % black)
-    for Vdd = 14:-1:10
+    for Vdd = 10:14
         
         % Image with only voltage scaled without image processing
         A_dvs = functions_script.displayed_image(I_A, Vdd, 1);
@@ -250,7 +251,7 @@ for i = 1:n_images
         efficiency_dvs(k, i) = functions_script.efficiency_dvs(A, uint8(Ah_dvs), Vdd);
         k=k+1;
 
-        for kx = 0.1:0.1:0.5
+        for kx = 0.05:0.05:0.25
 
             % Brightness scaling
             Ab = functions_script.brightness_scale_dvs(A, Vdd, kx);
@@ -278,6 +279,67 @@ for i = 1:n_images
 
         end
     end
+end
+
+% GENERATE SAMPLE IMAGES WITH THEIR TRANSFORMATIONS
+images = functions_script.all_images_banchmark;
+r = randi([1, n_images], 1, 20);
+n_transf_single_vdd = 17;
+n_sample_images = 20;
+if ~exist('image_samples_poll', 'dir')
+        mkdir 'image_samples_poll'
+end
+for i = 1:n_sample_images
+    image = imread(images(r(i)));              % select the image
+
+    % Transform from gray scale to RGB
+    if (size(image, 3) == 1)
+        clear S;
+        S(:,:,1) = image;
+        S(:,:,2) = image;
+        S(:,:,3) = image;
+        image = S;
+    end
+
+    Vdd = randi([10, 14]);          % random Vdd
+    constraint_dist = randi([1,5]); % random Distortion constraint
+
+    % Create images array for the given image
+    I_A = functions_script.computeCurrentPerColour(image, 15);
+    image_array = uint8(functions_script.displayed_image(I_A, Vdd, 1));
+    image_array(:,:,:,2) = uint8(functions_script.histogram_eq_dvs(image, Vdd));
+    j = 3;
+    for kx = 0.1:0.1:0.5 
+        image_array(:,:,:,j) = uint8(functions_script.brightness_scale_dvs(image, Vdd, kx));
+        j = j+1;
+        image_array(:,:,:,j) = uint8(functions_script.brightness_contrast_combine_dvs(image, Vdd, kx));
+        j = j+1;
+        image_array(:,:,:,j) = uint8(functions_script.contrast_enhance_dvs(image, Vdd, kx/2));
+        j = j+1;
+    end
+
+    % Extract distortion and efficiency related to the chosen Vdd
+    
+    distortion_array = distortion_dvs(:,r(i))';
+    distortion_array = distortion_array((Vdd-10)*n_transf_single_vdd+1:(Vdd-10+1)*n_transf_single_vdd);
+    efficiency_array = efficiency_dvs(:,r(i))';
+    efficiency_array = efficiency_array((Vdd-10)*n_transf_single_vdd+1:(Vdd-10+1)*n_transf_single_vdd);
+    
+
+    % Filter images with distortion < constraint and save them
+    newSubFolder = sprintf('image_%s', num2str(i));
+    if exist(strcat('./image_samples_poll/', newSubFolder), 'dir')
+        rmdir(strcat('./image_samples_poll/', newSubFolder), 's');
+    end
+    mkdir(strcat('./image_samples_poll/', newSubFolder));
+    
+    for j = 1:size(distortion_array,2)
+        if (distortion_array(j) < constraint_dist/100)
+            imwrite(image_array(:,:,:,j), strcat('image_samples_poll/', newSubFolder, '/', num2str(j), '.png'), 'png');
+        end
+    end
+    
+
 end
 
 save('result_dvs', 'efficiency_dvs', 'distortion_dvs');

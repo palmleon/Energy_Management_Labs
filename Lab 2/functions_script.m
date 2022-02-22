@@ -221,7 +221,7 @@ classdef functions_script
             S = uint8(A_scaled);
         end
 
-        % HISTOGRAM EQUALISATION
+        % HISTOGRAM EQUALIZATION
         function S = histogram_eq_dvs(A, Vdd)
             p1 =   4.251e-05;
             p2 =  -3.029e-04;
@@ -309,5 +309,3 @@ classdef functions_script
         end
     end
 end
-
-
