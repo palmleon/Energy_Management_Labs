@@ -1,31 +1,48 @@
-load('gmonths.mat')
+load('gmonths.mat');
+load('pv_digitizer.mat');
+load('pv_dcdc_digitizer.mat');
+load('batt_dcdc_digitizer.mat');
+load('battery_digitizer.mat');
 
 %%% Retrive MPP point given the pv curves digitized %%%
-load('pv_digitizer.mat')
 G = [250; 500; 750; 1000];
-I = zeros(4,1);
-V = zeros(4,1);
+pv_I = zeros(4,1);
+pv_V = zeros(4,1);
 mpp_pv_line_250 = [pv_line_250(:,1), pv_line_250(:,1).*pv_line_250(:,2)];
 mpp_pv_line_500 = [pv_line_500(:,1), pv_line_500(:,1).*pv_line_500(:,2)];
 mpp_pv_line_750 = [pv_line_750(:,1), pv_line_750(:,1).*pv_line_750(:,2)];
 mpp_pv_line_1000 = [pv_line_1000(:,1), pv_line_1000(:,1).*pv_line_1000(:,2)];
 [~,i] = max(mpp_pv_line_250(:,2));
 v_c = pv_line_250(i,:);
-V(1) = v_c(1);
-I(1) = v_c(2);
+pv_V(1) = v_c(1);
+pv_I(1) = v_c(2);
 [~,i] = max(mpp_pv_line_500(:,2));
 v_c = pv_line_500(i,:);
-V(2) = v_c(1);
-I(2) = v_c(2);
+pv_V(2) = v_c(1);
+pv_I(2) = v_c(2);
 [~,i] = max(mpp_pv_line_750(:,2));
 v_c = pv_line_750(i,:);
-V(3) = v_c(1);
-I(3) = v_c(2);
+pv_V(3) = v_c(1);
+pv_I(3) = v_c(2);
 [m,i] = max(mpp_pv_line_1000(:,2));
 v_c = pv_line_1000(i,:);
-V(4) = v_c(1);
-I(4) = v_c(2);
-%%%
+pv_V(4) = v_c(1);
+pv_I(4) = v_c(2);
+
+%%% pv module dcdc converter
+dcdc_pv_V = dcdcpv_eff(:,1);
+dcdc_pv_eff = dcdcpv_eff(:,2);
+
+%%% battery dcdc converter
+dcdc_batt_I = dcdc_batt(:,1);
+dcdc_batt_eff = dcdc_batt(:,2);
+
+%%% battery model
+samples = [0:0.01:1];
+disc1c = interp1(line1c(:,1), line1c(:,2), samples);
+disc05c = interp1(line05c(:,1), line05c(:,2), samples);
+batt_res = (disc1c - disc05c)./(3.2-16);
+batt_Voc = disc1c + batt_res*3.2;
 
 % sensor activation durantion 
 air_time = 30; 
