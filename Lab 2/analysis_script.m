@@ -86,13 +86,118 @@ subplot(1,2,2);
 boxplot(transpose(efficiency(2:11,:)), 'Label', x_label, 'symbol', '');
 ylabel('Efficiency');
 
-% Histogram equalization
+% Histogram equalization evaluation
 subplot(1,2,1);
 boxplot(transpose(distortion(12,:)), 'symbol', '');
 hold on; ylabel('Distortion');
 subplot(1,2,2);
 boxplot(transpose(efficiency(12,:)), 'symbol', '');
-ylabel('Efficiency');brightness_scale_dvs
+ylabel('Efficiency');
+
+% Hungry value evaluation
+subplot(1,2,1);
+x_label = {'90%','80%','70%','60%','50%','40%','30%','20%','10%','0%'};
+boxplot(transpose(distortion(13:22,:)), 'Label', x_label, 'symbol', '');
+hold on; ylabel('Distortion');
+subplot(1,2,2);
+boxplot(transpose(efficiency(13:22,:)), 'Label', x_label, 'symbol', '');
+ylabel('Efficiency');
+
+% Hungry luminance evaluation
+subplot(1,2,1);
+x_label = {'90%','80%','70%','60%','50%','40%','30%','20%','10%','0%'};
+boxplot(transpose(distortion(23:32,:)), 'Label', x_label, 'symbol', '');
+hold on; ylabel('Distortion');
+subplot(1,2,2);
+boxplot(transpose(efficiency(23:32,:)), 'Label', x_label, 'symbol', '');
+ylabel('Efficiency');
+
+% Hungry blue and hungry value
+subplot(1,2,1);
+x_label = {'95%','90%','85%','80%','75%','70%','65%','60%','55%','50%'};
+boxplot(transpose(distortion(33:42,:)), 'Label', x_label, 'symbol', '');
+hold on; ylabel('Distortion');
+subplot(1,2,2);
+boxplot(transpose(efficiency(33:42,:)), 'Label', x_label, 'symbol', '');
+ylabel('Efficiency');
+
+% Hungry luminance and hungry value
+subplot(1,2,1);
+x_label = {'95%','90%','85%','80%','75%','70%','65%','60%','55%','50%'};
+boxplot(transpose(distortion(43:52,:)), 'Label', x_label, 'symbol', '');
+hold on; ylabel('Distortion');
+subplot(1,2,2);
+boxplot(transpose(efficiency(43:52,:)), 'Label', x_label, 'symbol', '');
+ylabel('Efficiency');
+
+% Hungry blue and hungry luminance
+subplot(1,2,1);
+x_label = {'95%','90%','85%','80%','75%','70%','65%','60%','55%','50%'};
+boxplot(transpose(distortion(53:62,:)), 'Label', x_label, 'symbol', '');
+hold on; ylabel('Distortion');
+subplot(1,2,2);
+boxplot(transpose(efficiency(53:62,:)), 'Label', x_label, 'symbol', '');
+ylabel('Efficiency');
+
+% Hungry all
+subplot(1,2,1);
+x_label = {'95%','90%','85%','80%','75%','70%','65%','60%','55%','50%'};
+boxplot(transpose(distortion(63:72,:)), 'Label', x_label, 'symbol', '');
+hold on; ylabel('Distortion');
+subplot(1,2,2);
+boxplot(transpose(efficiency(63:72,:)), 'Label', x_label, 'symbol', '');
+ylabel('Efficiency');
+
+% Interpolation of efficiency under distortion constraint
+n_images = size(images, 2);
+eff = zeros(7, n_images, 4);
+inter(1,:) = [2:11];
+inter(2,:) = [13:22];
+inter(3,:) = [23:32];
+inter(4,:) = [33:42];
+inter(5,:) = [43:52];
+inter(6,:) = [53:62];
+inter(7,:) = [63:72];
+for t = 1:4
+    target = 0.01*t;
+    for i = 1:n_images
+        for g = 1:7
+            c = 5.0;
+            l = 0.0;
+            r = 10.0;
+            dist0 = [0; distortion(inter(g,:), i)];
+            s = interp1([0:10], dist0, c);
+            while (abs(target-s) >= 0.001 && abs(10.0-c) >= 0.01)
+                if (s > target)
+                    r = c;
+                else
+                    l = c;
+                end
+                c = (r+l)/2.0;
+                s = interp1([0:10], dist0, c);
+            end
+            %efficiency hungry blue under constraint 1% distortion
+            effic0 = [0; efficiency(inter(g,:), i)];
+            eff(g, i, t) = interp1([0:10], effic0, c);
+        end
+    end
+end
+
+eff_mean = mean(eff, 2);
+eff_2(1,:) = eff_mean(:,:,1);
+eff_2(2,:) = eff_mean(:,:,2);
+eff_2(3,:) = eff_mean(:,:,3);
+eff_2(4,:) = eff_mean(:,:,4);
+X = categorical({'1%', '2%', '3%', '4%'});
+X = reordercats(X,{'1%', '2%', '3%', '4%'});
+b = bar(X,eff_2);
+b(1).FaceColor = [231.0/255, 124.0/255, 141.0/251];
+b(2).FaceColor = [198.0/255, 146.0/255, 85.0/251];
+b(3).FaceColor = [152.0/255, 162.0/255, 85.0/251];
+b(4).FaceColor = [86.0/255, 173.0/255, 116.0/251];
+b(5).FaceColor = [94.0/255, 165.0/255, 197.0/251];
+b(6).FaceColor = [162.0/255, 145.0/255, 225.0/251];
+b(7).FaceColor = [226.0/255, 116.0/255, 207.0/251];
 
                     %%%%%%%%%% Second day %%%%%%%%%%
                     
@@ -147,7 +252,7 @@ for i = 1:n_images
         efficiency_dvs(k, i) = functions_script.efficiency_dvs(A, uint8(Ah_dvs), Vdd);
         k=k+1;
 
-        % Third transofrmation
+        % Third transformation
 
         % Fourth transformation
 
