@@ -303,27 +303,51 @@ for i = 1:n_sample_images
 
     Vdd = randi([10, 14]);          % random Vdd
     constraint_dist = randi([1,10]); % random Distortion constraint
+    distortion_array = zeros(1, 17);
+    efficiency_array = zeros(1, 17);
 
     % Create images array for the given image
     I_A = functions_script.computeCurrentPerColour(image, 15);
     image_array = uint8(functions_script.displayed_image(I_A, Vdd, 1));
-    image_array(:,:,:,2) = uint8(functions_script.histogram_eq_dvs(image, Vdd));
+    distortion_array(1) = functions_script.distortion(image, image_array);
+    efficiency_array(1) = functions_script.efficiency_dvs(image, image_array, Vdd);
+        
+    Ah = uint8(functions_script.histogram_eq_dvs(image, Vdd));
+    I_Ah = functions_script.computeCurrentPerColour(Ah, 15);
+    image_array(:,:,:,2) = functions_script.displayed_image(I_Ah, Vdd, 1);
+    distortion_array(2) = functions_script.distortion(image, image_array(:,:,:,2));
+    efficiency_array(2) = functions_script.efficiency_dvs(image, image_array(:,:,:,2), Vdd);
+    
     j = 3;
     for kx = 0.05:0.05:0.25 
-        image_array(:,:,:,j) = uint8(functions_script.brightness_scale_dvs(image, Vdd, kx));
+        Ab = uint8(functions_script.brightness_scale_dvs(image, Vdd, kx));
+        I_Ab = functions_script.computeCurrentPerColour(Ab, 15);
+        image_array(:,:,:,j) = functions_script.displayed_image(I_Ab, Vdd, 1);
+        distortion_array(j) = functions_script.distortion(image, image_array(:,:,:,j));
+        efficiency_array(j) = functions_script.efficiency_dvs(image, image_array(:,:,:,j), Vdd);
         j = j+1;
-        image_array(:,:,:,j) = uint8(functions_script.brightness_contrast_combine_dvs(image, Vdd, kx));
+
+        Abc = uint8(functions_script.brightness_contrast_combine_dvs(image, Vdd, kx));
+        I_Abc = functions_script.computeCurrentPerColour(Abc, 15);
+        image_array(:,:,:,j) = functions_script.displayed_image(I_Abc, Vdd, 1);
+        distortion_array(j) = functions_script.distortion(image, image_array(:,:,:,j));
+        efficiency_array(j) = functions_script.efficiency_dvs(image, image_array(:,:,:,j), Vdd);
         j = j+1;
-        image_array(:,:,:,j) = uint8(functions_script.contrast_enhance_dvs(image, Vdd, kx/2));
+
+        Ac = uint8(functions_script.contrast_enhance_dvs(image, Vdd, kx/2));
+        I_Ac = functions_script.computeCurrentPerColour(Ac, 15);
+        image_array(:,:,:,j) = functions_script.displayed_image(I_Ac, Vdd, 1);
+        distortion_array(j) = functions_script.distortion(image, image_array(:,:,:,j));
+        efficiency_array(j) = functions_script.efficiency_dvs(image, image_array(:,:,:,j), Vdd);
         j = j+1;
     end
-
+    %{
     % Extract distortion and efficiency related to the chosen Vdd
     distortion_array = distortion_dvs(:,r(i))';
     distortion_array = distortion_array((Vdd-10)*n_transf_single_vdd+1:(Vdd-9)*n_transf_single_vdd);
     efficiency_array = efficiency_dvs(:,r(i))';
     efficiency_array = efficiency_array((Vdd-10)*n_transf_single_vdd+1:(Vdd-9)*n_transf_single_vdd);
-
+    %}
     % Filter images with distortion < constraint and save them
     newSubFolder = sprintf('image_%s', num2str(i));
     if exist(strcat('./image_samples_poll/', newSubFolder), 'dir')
@@ -331,6 +355,7 @@ for i = 1:n_sample_images
     end
     mkdir(strcat('./image_samples_poll/', newSubFolder));
     
+    imwrite(image, strcat('image_samples_poll/', newSubFolder, '/original.png'), 'png');
     for j = 1:size(distortion_array,2)
         if (distortion_array(j) < constraint_dist/100)
             imwrite(image_array(:,:,:,j), strcat('image_samples_poll/', newSubFolder, '/', num2str(j), '.png'), 'png');
