@@ -6,29 +6,32 @@ load('batt_dcdc_digitizer.mat');
 load('battery_digitizer.mat');
 
 %%% Retrive MPP point given the pv curves digitized %%%
-G = [250; 500; 750; 1000];
-pv_I = zeros(4,1);
-pv_V = zeros(4,1);
+G = [0; 250; 500; 750; 1000];
+pv_I = zeros(5,1);
+pv_V = zeros(5,1);
 mpp_pv_line_250 = [pv_line_250(:,1), pv_line_250(:,1).*pv_line_250(:,2)];
 mpp_pv_line_500 = [pv_line_500(:,1), pv_line_500(:,1).*pv_line_500(:,2)];
 mpp_pv_line_750 = [pv_line_750(:,1), pv_line_750(:,1).*pv_line_750(:,2)];
 mpp_pv_line_1000 = [pv_line_1000(:,1), pv_line_1000(:,1).*pv_line_1000(:,2)];
+
 [~,i] = max(mpp_pv_line_250(:,2));
 v_c = pv_line_250(i,:);
 pv_V(1) = v_c(1);
-pv_I(1) = v_c(2);
-[~,i] = max(mpp_pv_line_500(:,2));
-v_c = pv_line_500(i,:);
+pv_I(1) = 0;
 pv_V(2) = v_c(1);
 pv_I(2) = v_c(2);
-[~,i] = max(mpp_pv_line_750(:,2));
-v_c = pv_line_750(i,:);
+[~,i] = max(mpp_pv_line_500(:,2));
+v_c = pv_line_500(i,:);
 pv_V(3) = v_c(1);
 pv_I(3) = v_c(2);
-[m,i] = max(mpp_pv_line_1000(:,2));
-v_c = pv_line_1000(i,:);
+[~,i] = max(mpp_pv_line_750(:,2));
+v_c = pv_line_750(i,:);
 pv_V(4) = v_c(1);
 pv_I(4) = v_c(2);
+[m,i] = max(mpp_pv_line_1000(:,2));
+v_c = pv_line_1000(i,:);
+pv_V(5) = v_c(1);
+pv_I(5) = v_c(2);
 clear mpp_pv_line_1000 mpp_pv_line_750 mpp_pv_line_500 mpp_pv_line_250
 clear pv_line_1000 pv_line_750 pv_line_500 pv_line_250 m i v_c
 
