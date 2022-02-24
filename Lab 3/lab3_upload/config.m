@@ -1,3 +1,4 @@
+clear all;
 load('gmonths.mat');
 load('pv_digitizer.mat');
 load('pv_dcdc_digitizer.mat');
@@ -28,14 +29,18 @@ pv_I(3) = v_c(2);
 v_c = pv_line_1000(i,:);
 pv_V(4) = v_c(1);
 pv_I(4) = v_c(2);
+clear mpp_pv_line_1000 mpp_pv_line_750 mpp_pv_line_500 mpp_pv_line_250
+clear pv_line_1000 pv_line_750 pv_line_500 pv_line_250 m i v_c
 
 %%% pv module dcdc converter
 dcdc_pv_V = dcdcpv_eff(:,1);
 dcdc_pv_eff = dcdcpv_eff(:,2);
+clear dcdcpv_eff
 
 %%% battery dcdc converter
 dcdc_batt_I = dcdc_batt(:,1);
 dcdc_batt_eff = dcdc_batt(:,2);
+clear dcdc_batt
 
 %%% battery model
 samples = [0:0.01:1];
@@ -43,6 +48,7 @@ disc1c = interp1(line1c(:,1), line1c(:,2), samples);
 disc05c = interp1(line05c(:,1), line05c(:,2), samples);
 batt_res = (disc1c - disc05c)./(3.2-16);
 batt_Voc = disc1c + batt_res*3.2;
+clear samples batt_Voc batt_res disc1c disc05c line1c line05c
 
 % sensor activation durantion 
 air_time = 30; 
